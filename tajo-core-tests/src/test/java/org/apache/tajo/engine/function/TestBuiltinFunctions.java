@@ -151,7 +151,7 @@ public class TestBuiltinFunctions extends QueryTestCaseBase {
   public void testMinMaxTimestamp() throws Exception {
     Schema schema = new Schema();
     schema.addColumn("value", TajoDataTypes.Type.TIMESTAMP);
-    String[] data = new String[]{ "1999-01-01 11:11:11", "2015-01-01 23:12:50", "2016-12-24 00:00:01", 
+    String[] data = new String[]{ "1999-01-01 11:11:11", "2015-01-01 23:12:50", "2016-12-24 00:00:01",
             "1977-05-04 09:59:59", "2002-11-21 12:13:14" };
     TajoTestingCluster.createTable(conf, "testbuiltin11", schema, data, 1);
 
@@ -661,7 +661,7 @@ public class TestBuiltinFunctions extends QueryTestCaseBase {
     assertResultSet(res);
     cleanupQuery(res);
   }
-  
+
   @Test
   public void testRankWithTwoTables() throws Exception {
     Schema schema = new Schema();
@@ -674,7 +674,7 @@ public class TestBuiltinFunctions extends QueryTestCaseBase {
     data = new String[] {"1|efgh", "2|abcd", "4|erjk", "8|dfef"};
     TajoTestingCluster.createTable(conf, "rank_table2", schema, data, 1);
     ResultSet res = null;
-    
+
     try {
       res = executeString("select rank() over (order by id) from rank_table1 a, rank_table2 b "
           + " where a.id = b.refid");
@@ -683,7 +683,7 @@ public class TestBuiltinFunctions extends QueryTestCaseBase {
           "1\n" +
           "2\n" +
           "3\n";
-      
+
       assertEquals(expectedString, resultSetToString(res));
     } finally {
       if (res != null) {
@@ -717,6 +717,35 @@ public class TestBuiltinFunctions extends QueryTestCaseBase {
       String ascExpected = "corr1,corr2,corr3,corr4\n" +
           "-------------------------------\n" +
           "0.5,-0.9037045658322675,0.7350290063698216,-0.8761489936497805\n";
+
+      assertEquals(ascExpected, resultSetToString(res));
+      res.close();
+    } finally {
+      executeString("DROP TABLE testbuiltin11 PURGE");
+    }
+  }
+
+  @Test
+  public void testStringAgg() throws Exception {
+    Schema schema = SchemaBuilder.builder()
+        .add("id", TajoDataTypes.Type.INT4)
+        .add("value", TajoDataTypes.Type.TEXT)
+        .build();
+    String[] data = new String[]{
+        "1|\\N",
+        "1|a",
+        "1|b",
+        "1|c",
+        "2|d",
+        "2|f"};
+    TajoTestingCluster.createTable(conf, "testbuiltin11", schema, data, 1);
+
+    try {
+      ResultSet res = executeString("select string_agg(value, '|') as value from testbuiltin11 group by id order by id");
+      String ascExpected = "value\n" +
+          "-------------------------------\n" +
+          "null|a|b|c\n" +
+          "d|f\n";
 
       assertEquals(ascExpected, resultSetToString(res));
       res.close();
