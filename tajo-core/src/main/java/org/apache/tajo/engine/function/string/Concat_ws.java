@@ -18,16 +18,18 @@
 
 package org.apache.tajo.engine.function.string;
 
-import com.google.gson.annotations.Expose;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.tajo.catalog.Column;
 import org.apache.tajo.common.TajoDataTypes;
 import org.apache.tajo.datum.Datum;
 import org.apache.tajo.datum.DatumFactory;
 import org.apache.tajo.datum.NullDatum;
-import org.apache.tajo.plan.function.GeneralFunction;
 import org.apache.tajo.engine.function.annotation.Description;
 import org.apache.tajo.engine.function.annotation.ParamTypes;
+import org.apache.tajo.plan.function.GeneralFunction;
 import org.apache.tajo.storage.Tuple;
+
+import com.google.gson.annotations.Expose;
 
 /**
  * Function definition
@@ -60,7 +62,7 @@ public class Concat_ws extends GeneralFunction {
       return NullDatum.get();
     }
 
-    String separator = params.getText(0);
+    String separator = StringEscapeUtils.unescapeJava(params.getText(0));
 
     StringBuilder result = new StringBuilder();
 
